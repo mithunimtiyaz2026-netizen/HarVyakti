@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Open Works | HarVyakti</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4facfe">
+
+<style>
+/* ================= Body & Global ================= */
+body {
+  margin:0;
+  font-family:'Segoe UI',Tahoma,sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  background: linear-gradient(to bottom,#e0f7fa,#ffffff);
+}
+a { text-decoration:none; color:inherit; }
+button { cursor:pointer; transition:.3s; }
+
+/* ================= Header ================= */
+header {
+  position:fixed; top:0; left:0; width:100%;
+  background: linear-gradient(90deg,#4facfe,#00f2fe);
+  box-shadow: 0 6px 12px rgba(0,0,0,.25);
+  z-index:1000;
+}
+.header-container {
+  max-width:1200px;
+  margin:0 auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 20px;
+}
+.logo {
+  font-size:1.8rem;
+  font-weight:bold;
+  color:white;
+  cursor:pointer;
+  text-shadow: 1px 1px 3px rgba(0,0,0,.3);
+}
+nav a {
+  color:white;
+  text-decoration:none;
+  margin-left:25px;
+  font-weight:600;
+  position:relative;
+}
+nav a::after {
+  content:'';
+  position:absolute;
+  width:0;
+  height:2px;
+  bottom:-3px;
+  left:0;
+  background:#fff;
+  transition:.3s;
+}
+nav a:hover::after { width:100%; }
+
+/* ================= Main ================= */
+main { flex:1; padding:140px 20px 20px; }
+
+/* Filters */
+.filters {
+  display:flex;
+  gap:10px;
+  margin-bottom:25px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.filters select {
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-weight:600;
+  background: linear-gradient(135deg,#ffffff,#e3f2fd);
+  box-shadow:0 2px 6px rgba(0,0,0,.1);
+  transition:.3s;
+}
+.filters select:hover { transform:scale(1.03); }
+
+/* ================= Cards ================= */
+.work-card {
+  background: linear-gradient(135deg,#ffffff,#e3f2fd);
+  padding:18px;
+  margin-bottom:18px;
+  border-radius:12px;
+  box-shadow:0 6px 15px rgba(0,0,0,.15);
+  transition:.3s;
+}
+.work-card:hover {
+  transform: translateY(-5px);
+  box-shadow:0 10px 25px rgba(0,0,0,.2);
+}
+.work-card h3 { margin-bottom:5px; }
+.work-card p { margin:6px 0; font-size:14px; }
+
+/* Status badges */
+.status-badge {
+  padding:5px 10px;
+  border-radius:6px;
+  color:#fff;
+  font-weight:600;
+  font-size:12px;
+  text-transform:capitalize;
+}
+.status-open { background:#2e7d32; }
+
+/* Buttons */
+button {
+  padding:8px 14px;
+  border:none;
+  border-radius:8px;
+  font-weight:600;
+  color:#fff;
+  background:linear-gradient(90deg,#4facfe,#00f2fe);
+  margin-top:6px;
+  margin-right:6px;
+}
+button:hover {
+  transform:scale(1.05);
+  box-shadow:0 4px 15px rgba(0,0,0,.2);
+}
+button:disabled {
+  background:#aaa;
+  cursor:not-allowed;
+}
+
+/* Comment Section */
+.comment-section {
+  display:none;
+  margin-top:12px;
+  border-top:1px solid #ccc;
+  padding-top:10px;
+}
+.comment-item {
+  margin-bottom:5px;
+  font-size:14px;
+  background:#f1f8ff;
+  padding:6px 10px;
+  border-radius:6px;
+}
+.comment-box {
+  display:flex;
+  gap:8px;
+  margin-top:8px;
+}
+.comment-box input {
+  flex:1;
+  padding:6px 8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  font-size:14px;
+}
+
+/* Empty State */
+.empty {
+  text-align:center;
+  color:#555;
+  margin-top:40px;
+  font-weight:600;
+  font-size:16px;
+}
+
+/* ================= Footer ================= */
+footer {
+  background:#1c1c1c;
+  color:#fff;
+  text-align:center;
+  padding:15px 0;
+  font-weight:600;
+  box-shadow:0 -4px 10px rgba(0,0,0,.1);
+}
+.post-image{
+  width:100%;
+  max-height:220px;
+  object-fit:cover;
+  border-radius:10px;
+  margin:10px 0;
+  box-shadow:0 4px 10px rgba(0,0,0,.15);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-container">
+    <div class="logo">HarVyakti</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="filters">
+  <select id="categoryFilter">
+    <option value="all">All Categories</option>
+    <option value="ride">Ride</option>
+    <option value="work">Work</option>
+    <option value="idea">Idea</option>
+    <option value="problem">Problem</option>
+  </select>
+
+  <select id="distanceFilter">
+    <option value="all">All distances</option>
+    <option value="0.1">100 meters</option>
+    <option value="1">1 km</option>
+    <option value="5">5 km</option>
+    <option value="10">10 km</option>
+    <option value="50">50 km</option>
+  </select>
+</div>
+
+<div id="worksContainer"></div>
+</main>
+
+<!-- Bottom-right Install Button -->
+<button id="installBtn" 
+        style="display:none; position:fixed; bottom:20px; right:20px; padding:10px 15px; background:#007bff; color:white; border:none; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.2); cursor:pointer; z-index:1000;">
+    Install App
+</button>
+
+<footer>© 2025 HarVyakti</footer>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  collection, doc, getDoc, updateDoc,
+  arrayUnion, arrayRemove, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const worksContainer = document.getElementById("worksContainer");
+const distanceFilter = document.getElementById("distanceFilter");
+const categoryFilter = document.getElementById("categoryFilter");
+
+let currentUser = null;
+let userLat = null, userLng = null;
+let allWorks = [];
+let lastHash = "";
+
+/* ========= USER CACHE (🔥 SPEED FIX) ========= */
+const userCache = {};
+async function getUserName(uid){
+  if(!uid) return "Unknown";
+  if(userCache[uid]) return userCache[uid];
+
+  try{
+    const snap = await getDoc(doc(db,"users",uid));
+    userCache[uid] = snap.exists() ? (snap.data().name || "Unknown") : "Unknown";
+  }catch{
+    userCache[uid] = "Unknown";
+  }
+  return userCache[uid];
+}
+
+/* ================= AUTH ================= */
+onAuthStateChanged(auth, user => {
+  currentUser = user || null;
+  subscribeToPosts();
+  getUserLocation();
+});
+
+/* ================= LOCATION ================= */
+function getUserLocation(){
+  if(!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    userLat = pos.coords.latitude;
+    userLng = pos.coords.longitude;
+    renderWorks(true);
+  });
+}
+
+/* ================= DISTANCE ================= */
+function getDistance(lat1,lng1,lat2,lng2){
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180;
+  const dLng = (lng2-lng1)*Math.PI/180;
+  const a =
+    Math.sin(dLat/2)**2 +
+    Math.cos(lat1*Math.PI/180) *
+    Math.cos(lat2*Math.PI/180) *
+    Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+/* ================= REALTIME POSTS ================= */
+function subscribeToPosts(){
+  onSnapshot(collection(db,"posts"), async snap=>{
+    const temp = [];
+    for(const d of snap.docs){
+      const w = { id:d.id, ...d.data() };
+      w.senderName = await getUserName(w.postedBy);
+      w.likes ||= [];
+      w.comments ||= [];
+      temp.push(w);
+    }
+    allWorks = temp;
+    renderWorks(true);
+  });
+}
+
+/* ================= RENDER ================= */
+function renderWorks(force=false){
+  const hash = JSON.stringify(allWorks.map(w=>[
+    w.id, w.likes.length, w.comments.length, w.status
+  ]));
+  if(!force && hash === lastHash) return;
+  lastHash = hash;
+
+  const limit = distanceFilter.value;
+  const cat = categoryFilter.value;
+
+  let html = "";
+  let found = false;
+
+  for(const w of allWorks){
+    if(w.status !== "open") continue;
+    if(cat !== "all" && w.category !== cat) continue;
+
+    let distText = "N/A";
+    if (
+      userLat !== null &&
+      userLng !== null &&
+      w.location?.lat &&
+      w.location?.lng
+    ) {
+      const postLat = Number(w.location.lat);
+      const postLng = Number(w.location.lng);
+
+      if (!isNaN(postLat) && !isNaN(postLng)) {
+        const d = getDistance(userLat, userLng, postLat, postLng);
+
+        if (d !== null) {
+          if(limit !== "all" && d > Number(limit)) continue;
+
+          if(d < 0.05) distText = "0 m";
+          else if(d < 1) distText = Math.round(d*1000)+" m";
+          else if(d <= 200) distText = d.toFixed(1)+" km";
+          else distText = "Far away";
+        }
+      }
+    }
+
+    found = true;
+    const isSelf = currentUser && w.postedBy === currentUser.uid;
+
+    html += `
+    <div class="work-card">
+      <p><b>Category:</b> ${w.category}</p>
+      <p><b>Description:</b> ${w.description}</p>
+
+      ${w.image ? `<img src="${w.image}" loading="lazy" class="post-image">` : ""}
+
+      <p>${
+        w.category==="ride" ? `From: ${w.from} → To: ${w.to} | Seats: ${w.seats}` :
+        w.category==="work" ? `Amount: ₹${w.amount}` :
+        w.category==="idea" ? `Type: ${w.ideaType}` :
+        w.category==="problem" ? `Type: ${w.problemType}` : ""
+      }</p>
+
+      <p><b>Status:</b>
+        <span class="status-badge status-open">${w.status}</span>
+      </p>
+
+      <p><b>Sender:</b> ${w.senderName}</p>
+      <p><b>Distance:</b> ${distText}</p>
+
+      ${w.category!=="idea" ? `<button onclick="acceptWork('${w.id}')" ${isSelf?"disabled":""}>Accept Work</button>` : ""}
+
+      <button onclick="toggleLike('${w.id}')">❤️ ${w.likes.length}</button>
+      <button onclick="toggleComments('${w.id}')">💬 ${w.comments.length}</button>
+
+      <div class="comment-section" id="comments-${w.id}">
+        ${w.comments.map(c=>`<div class="comment-item">${c.text}</div>`).join("")}
+        <div class="comment-box">
+          <input type="text" placeholder="Add comment">
+          <button onclick="addComment('${w.id}', this.previousElementSibling)">Add</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  worksContainer.innerHTML = found ? html : `<div class="empty">No works found</div>`;
+}
+
+/* ================= EVENTS ================= */
+distanceFilter.onchange = ()=>requestAnimationFrame(renderWorks);
+categoryFilter.onchange = ()=>requestAnimationFrame(renderWorks);
+
+/* ================= ACTIONS ================= */
+window.acceptWork = async id=>{
+  if(!currentUser){ location.href="login.html"; return; }
+  await updateDoc(doc(db,"posts",id),{
+    acceptedBy: currentUser.uid,
+    status:"accepted"
+  });
+};
+
+window.toggleLike = async id=>{
+  if(!currentUser){ location.href="login.html"; return; }
+  const w = allWorks.find(x=>x.id===id);
+  if(!w) return;
+  await updateDoc(doc(db,"posts",id),{
+    likes: w.likes.includes(currentUser.uid)
+      ? arrayRemove(currentUser.uid)
+      : arrayUnion(currentUser.uid)
+  });
+};
+
+window.toggleComments = id=>{
+  const el = document.getElementById("comments-"+id);
+  if(el) el.style.display = el.style.display==="block"?"none":"block";
+};
+
+window.addComment = async(id,input)=>{
+  if(!currentUser){ location.href="login.html"; return; }
+  const text = input.value.trim();
+  if(!text) return;
+  await updateDoc(doc(db,"posts",id),{
+    comments: arrayUnion({ userId:currentUser.uid, text })
+  });
+  input.value="";
+};
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/service-worker.js")
+    .then(() => console.log("✅ Service Worker registered"))
+    .catch(err => console.log("❌ SW registration failed", err));
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard – HarVyakti</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial,sans-serif;
+  background:#f2f4f7;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  padding-top:110px;
+}
+
+/* Header */
+header{
+  position:fixed; top:0; left:0; width:100%;
+  background:linear-gradient(90deg,#4facfe,#00f2fe);
+  box-shadow:0 4px 8px rgba(0,0,0,.2);
+  z-index:1000;
+}
+.header-container{
+  max-width:1200px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 20px;
+}
+.logo{font-size:1.8rem;font-weight:bold;color:#fff}
+
+/* Desktop nav */
+nav.desktop-nav a{
+  color:#fff;
+  text-decoration:none;
+  margin-left:25px;
+  font-weight:600;
+  position:relative;
+}
+nav.desktop-nav a::after{
+  content:'';position:absolute;width:0;height:2px;bottom:-3px;left:0;background:#fff;transition:.3s;
+}
+nav.desktop-nav a:hover::after{width:100%;}
+
+/* User info */
+#userInfo{display:flex;align-items:center;gap:10px}
+#userEmail{color:#fff;font-weight:bold}
+#logoutBtn{
+  padding:6px 12px;
+  border:none;
+  border-radius:5px;
+  background:#e53935;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* Hamburger */
+.hamburger{
+  display:none;
+  flex-direction:column;
+  width:28px;
+  height:20px;
+  cursor:pointer;
+}
+.hamburger div{
+  height:3px;
+  background:#fff;
+  border-radius:2px;
+  transition:.3s;
+}
+.hamburger.active div:nth-child(1){transform:rotate(45deg) translate(5px,5px);}
+.hamburger.active div:nth-child(2){opacity:0;}
+.hamburger.active div:nth-child(3){transform:rotate(-45deg) translate(5px,-5px);}
+
+/* Mobile Menu */
+.mobile-menu{
+  position:fixed; top:0; right:-260px;
+  width:260px; height:100%;
+  background:#fff;
+  box-shadow:-4px 0 12px rgba(0,0,0,.2);
+  display:flex;
+  flex-direction:column;
+  padding:70px 20px;
+  gap:20px;
+  transition:.3s;
+  z-index:1050;
+}
+.mobile-menu.active{right:0;}
+.mobile-menu a{color:#1976d2;font-weight:600;text-decoration:none}
+
+/* Mobile logout button style */
+#mobileLogout{
+  padding:6px 12px;
+  border:none;
+  border-radius:5px;
+  background:#e53935;
+  color:#fff;
+  cursor:pointer;
+}
+
+.mobile-user{
+  margin-top:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* Overlay */
+.overlay{
+  position:fixed; top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,.35);
+  opacity:0; pointer-events:none;
+  transition:.3s;
+}
+.overlay.active{opacity:1;pointer-events:auto}
+
+/* Main */
+main{flex:1;padding:20px;text-align:center}
+.welcome{margin:30px 0;font-size:22px;color:#1976d2}
+
+/* Cards */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:20px;
+  padding:0 20px 40px;
+}
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,.1);
+  text-decoration:none;
+  color:#333;
+  transition:.3s;
+}
+.card:hover{transform:translateY(-3px);}
+
+/* Footer */
+footer{
+  background:#1c1c1c;
+  color:#fff;
+  text-align:center;
+  padding:15px 0;
+}
+
+/* Responsive */
+@media(max-width:768px){
+  nav.desktop-nav,#userInfo{display:none;}
+  .hamburger{display:flex;}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-container">
+    <div class="logo">HarVyakti</div>
+
+    <nav class="desktop-nav">
+      <a href="index.html">Home</a>
+      <a href="profile1.html">My Profile</a>
+    </nav>
+
+    <div id="userInfo">
+      <span id="userEmail"></span>
+      <button id="logoutBtn">Logout</button>
+    </div>
+
+    <div class="hamburger" id="hamburger">
+      <div></div><div></div><div></div>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">Home</a>
+  <a href="profile1.html">My Profile</a>
+  <div class="mobile-user">
+    <span id="mobileEmail"></span>
+    <button id="mobileLogout">Logout</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<main>
+  <div class="welcome">Welcome 👋</div>
+  <div class="cards">
+    <a href="post-work1.html" class="card">Post Work</a>
+    <a href="nearby-users.html" class="card">Nearby Users</a>
+    <a href="my-works.html" class="card">My Works</a>
+    <a href="accepted-work.html" class="card">Accepted Works</a>
+   
+  </div>
+</main>
+
+<footer>© 2025 HarVyakti</footer>
+
+<script type="module">
+import { auth } from "./firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const userEmail = document.getElementById("userEmail");
+  const mobileEmail = document.getElementById("mobileEmail");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const mobileLogout = document.getElementById("mobileLogout");
+
+  const hamburger = document.getElementById("hamburger");
+  const mobileMenu = document.getElementById("mobileMenu");
+  const overlay = document.getElementById("overlay");
+
+  /* Menu toggle */
+  const toggleMenu = () => {
+    hamburger.classList.toggle("active");
+    mobileMenu.classList.toggle("active");
+    overlay.classList.toggle("active");
+  };
+  hamburger.onclick = toggleMenu;
+  overlay.onclick = toggleMenu;
+
+  /* Logout buttons */
+  logoutBtn.onclick = mobileLogout.onclick = async () => {
+    await signOut(auth);
+    location.href = "index.html";
+  };
+
+  /* Auth listener */
+  onAuthStateChanged(auth, user => {
+    if(!user){
+      location.href="login.html";
+      return;
+    }
+    userEmail.textContent = user.email;
+    mobileEmail.textContent = user.email;
+  });
+});
+</script>
+
+</body>
+</html>

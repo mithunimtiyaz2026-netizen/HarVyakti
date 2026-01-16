@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Post Work | HarVyakti</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f2f4f7;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+header{
+  position:fixed;
+  top:0;left:0;
+  width:100%;
+  background:linear-gradient(90deg,#4facfe,#00f2fe);
+  box-shadow:0 4px 8px rgba(0,0,0,.2);
+  z-index:1000;
+}
+.header-container{
+  max-width:1200px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 20px;
+}
+.logo{font-size:1.8rem;font-weight:bold;color:#fff}
+nav a{
+  color:#fff;
+  text-decoration:none;
+  margin-left:25px;
+  font-weight:600;
+  position:relative;
+}
+nav a::after{
+  content:''; position:absolute; width:0; height:2px; bottom:-3px; left:0; background:#fff; transition:.3s;
+}
+nav a:hover::after{width:100%}
+
+main{ flex:1; padding-top:110px; }
+footer{ background:#1c1c1c; color:#fff; text-align:center; padding:15px 0; }
+.container{ max-width:500px; margin:20px auto; background:#fff; padding:15px; border-radius:8px; }
+h2{text-align:center;}
+select,input,textarea,button{
+  width:100%;padding:10px;margin:8px 0;
+  border-radius:5px;border:1px solid #ccc;
+}
+.extra{display:none;}
+button{background:#2196f3;color:#fff;border:none;font-size:16px;}
+#locationText{font-size:14px;color:#555;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-container">
+    <div class="logo">HarVyakti</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="container">
+  <h2>Create Post</h2>
+
+  <select id="category" onchange="changeCategory()">
+    <option value="">Select Category</option>
+    <option value="ride">Ride</option>
+    <option value="work">Work</option>
+    <option value="idea">Idea</option>
+    <option value="problem">Problem</option>
+  </select>
+
+  <textarea id="desc" placeholder="Write your need, earn rewards and money..."></textarea>
+
+  <label><b>Upload Image (optional)</b></label>
+  <input type="file" id="imageInput" accept="image/*">
+  <p style="font-size:13px;color:#666">Max size: 500 KB | If not selected, category image will be used</p>
+
+  <div id="ride" class="extra">
+    <input id="from" placeholder="From">
+    <input id="to" placeholder="To">
+    <input id="seats" type="number" placeholder="Available Seats">
+  </div>
+
+  <div id="work" class="extra">
+    <input id="workPrice" type="number" placeholder="Expected Amount">
+  </div>
+
+  <div id="idea" class="extra">
+    <select id="ideaType">
+      <option value="Startup">Startup</option>
+      <option value="Local">Local</option>
+      <option value="Tech">Tech</option>
+    </select>
+  </div>
+
+  <div id="problem" class="extra">
+    <select id="problemType">
+      <option value="Society">Society</option>
+      <option value="Village">Village</option>
+      <option value="Road">Road</option>
+    </select>
+  </div>
+
+  <p id="locationText">📍 Detecting location...</p>
+
+  <button onclick="savePost()">Post</button>
+</div>
+</main>
+
+<footer>© 2025 HarVyakti</footer>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+let userLocation = null;
+const imageInput = document.getElementById("imageInput");
+const MAX_IMAGE_SIZE = 500 * 1024; // 500 KB
+const DEFAULT_IMAGES = {
+  ride: "assets/ride.png",
+  work: "assets/work.png",
+  idea: "assets/idea.png",
+  problem: "assets/problem.png"
+};
+
+// ----------------- Auth check -----------------
+onAuthStateChanged(auth,user=>{
+  if(!user){
+    alert("Please login first");
+    location.href="login.html";
+  }
+});
+
+// ----------------- Category toggle -----------------
+window.changeCategory = function(){
+  document.querySelectorAll(".extra").forEach(e=>e.style.display="none");
+  if(category.value) document.getElementById(category.value).style.display="block";
+};
+
+// ----------------- Location -----------------
+if("geolocation" in navigator){
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      userLocation={lat:pos.coords.latitude,lng:pos.coords.longitude};
+      locationText.innerText=`📍 Location detected (${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)})`;
+    },
+    ()=>locationText.innerText="📍 Location unavailable"
+  );
+}
+
+// ----------------- Read image -----------------
+function readImageAsBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ----------------- Image moderation -----------------
+const SIGHTENGINE_USER = "1383922357"; // replace
+const SIGHTENGINE_SECRET = "fnGciqd5gaaRSMWSShswChpjQHoCf2XH"; // replace
+
+async function checkImageSafety(file){
+  try{
+    const form = new FormData();
+    
+    // send the file directly (preferred)
+    form.append('media', file);  
+
+    // specify models and credentials
+    
+    form.append('models', 'nudity,offensive,scam');
+    form.append('api_user', SIGHTENGINE_USER);
+    form.append('api_secret', SIGHTENGINE_SECRET);
+
+    const resp = await fetch('https://api.sightengine.com/1.0/check.json', {
+      method:'POST',
+      body: form
+    });
+
+    if(!resp.ok){
+      console.error("HTTP error:", resp.status, await resp.text());
+      return true; // allow if API fails
+    }
+
+    const result = await resp.json();
+
+    if(result.nudity?.raw >= 0.5 || result.offensive?.prob >= 0.5 || result.scam?.prob >= 0.5){
+      return false; // unsafe
+    }
+
+    return true; // safe
+
+  }catch(e){
+    console.error("Image moderation failed:", e);
+    return true; // allow if API fails
+  }
+}
+
+// ----------------- Save Post -----------------
+window.savePost = async function(){
+  if(!category.value || !desc.value){
+    alert("Category & description required");
+    return;
+  }
+
+  let imageData = DEFAULT_IMAGES[category.value]; // default
+
+  if(imageInput.files.length){
+    const file = imageInput.files[0];
+    if(file.size > MAX_IMAGE_SIZE){
+      alert("❌ Image too large. Max 500 KB allowed");
+      return;
+    }
+
+const safe = await checkImageSafety(file);
+if(!safe){
+  alert("❌ Image blocked due to nudity/spam/offensive content");
+  return;
+}
+
+// optionally convert to base64 to save in Firestore
+const imageData = await readImageAsBase64(file);
+
+  }
+  const data={
+    category:category.value,
+    description:desc.value,
+    image:imageData,
+    location:userLocation,
+    status:"open",
+    postedBy:auth.currentUser.uid,
+    createdAt:serverTimestamp()
+  };
+
+  if(category.value==="ride"){
+    data.from=from.value;
+    data.to=to.value;
+    data.seats=Number(seats.value||0);
+  }
+  if(category.value==="work") data.amount=Number(workPrice.value||0);
+  if(category.value==="idea") data.ideaType=ideaType.value;
+  if(category.value==="problem") data.problemType=problemType.value;
+
+  try{
+    await addDoc(collection(db,"posts"),data);
+    alert("✅ Post saved");
+    location.reload();
+  }catch(e){
+    alert("❌ Error saving post");
+  }
+};
+</script>
+
+</body>
+</html>
